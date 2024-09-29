@@ -17,6 +17,6 @@ class InventoryUpdateListener(private val plugin: Armament) : Listener {
     @EventHandler
     fun PlayerItemHeldEvent.onItemHeld() {
         val item = player.inventory.getItem(newSlot)
-        InventoryUpdater(plugin).updateItemIfNeeded(item, player.inventory, newSlot)
+        InventoryUpdater(plugin).updateItem(item, player.inventory, newSlot)
     }
 }

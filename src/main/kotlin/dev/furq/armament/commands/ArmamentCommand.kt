@@ -6,6 +6,8 @@ import dev.furq.armament.utils.ArmorCreator
 import dev.furq.armament.utils.DatapackGenerator
 import dev.furq.armament.utils.ResourcePackGenerator
 import org.bukkit.Bukkit
+import org.bukkit.ChatColor
+import org.bukkit.Material
 import org.bukkit.attribute.Attribute
 import org.bukkit.attribute.AttributeModifier
 import org.bukkit.command.Command
@@ -13,19 +15,16 @@ import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
+import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import java.io.File
+import java.util.*
 
 class ArmamentCommand(private val plugin: Armament) : CommandExecutor {
 
     private var armorsConfig = YamlConfiguration.loadConfiguration(File(plugin.dataFolder, "armors.yml"))
     private val prefix = plugin.getMessage("prefix")
     private val armorCreator = ArmorCreator(plugin)
-    private val runningShoesMapping = mapOf(
-        "slow" to 0.2,
-        "medium" to 0.4,
-        "fast" to 0.7
-    )
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         if (command.label.equals("armament", ignoreCase = true) && args.isNotEmpty()) {
@@ -144,7 +143,7 @@ class ArmamentCommand(private val plugin: Armament) : CommandExecutor {
 
 
         val speedType = args[1].lowercase()
-        if (speedType !in runningShoesMapping.keys) return
+        if (speedType !in listOf("slow", "medium", "fast")) return
         sender.sendMessage("$prefix §7Invalid speed type. Use slow, medium, or fast.")
 
 
@@ -155,7 +154,6 @@ class ArmamentCommand(private val plugin: Armament) : CommandExecutor {
 
 
         val shoes = createRunningShoes(speedType)
-
         targetPlayer.inventory.addItem(shoes)
 
         sender.sendMessage("$prefix §7Given $speedType running shoes to ${targetPlayer.name}")
@@ -165,15 +163,34 @@ class ArmamentCommand(private val plugin: Armament) : CommandExecutor {
     }
 
     private fun createRunningShoes(speedType: String): ItemStack {
-        val shoes = armorCreator.createArmorPiece("maletrainer", "boots")!!
-        val speedModifier = AttributeModifier(
-            "generic.movement_speed",
-            runningShoesMapping[speedType]!!,
-            AttributeModifier.Operation.ADD_NUMBER
-        )
-        shoes.itemMeta?.addAttributeModifier(Attribute.GENERIC_MOVEMENT_SPEED, speedModifier)
+        val shoes = armorCreator.createArmorPiece("maletrainer", "boots") ?: return ItemStack(Material.AIR)
+        val itemMeta = shoes.itemMeta ?: return shoes
 
-        shoes.itemMeta = shoes.itemMeta
+        val speedAmount = when (speedType) {
+            "slow" -> 0.2
+            "medium" -> 0.4
+            "fast" -> 0.7
+            else -> 0.2
+        }
+
+        val speedModifier = AttributeModifier(
+            UUID.randomUUID(),
+            "minecraft:generic.movement_speed",
+            speedAmount,
+            AttributeModifier.Operation.MULTIPLY_SCALAR_1,
+            EquipmentSlot.FEET
+        )
+        itemMeta.addAttributeModifier(Attribute.GENERIC_MOVEMENT_SPEED, speedModifier)
+
+        val displayName = when (speedType) {
+            "slow" -> "&6Old Running Shoes"
+            "medium" -> "&6Running Shoes"
+            "fast" -> "&6Improved Running Shoes"
+            else -> "&6Running Shoes"
+        }
+        itemMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', displayName))
+
+        shoes.itemMeta = itemMeta
         return shoes
     }
 }

@@ -2,7 +2,6 @@ package dev.furq.armament.utils
 
 import dev.furq.armament.Armament
 import org.bukkit.ChatColor
-import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.inventory.ItemStack
@@ -16,45 +15,35 @@ class InventoryUpdater(private val plugin: Armament) {
     private val armorsConfigFile = File(plugin.dataFolder, "armors.yml")
     private val armorsConfig = YamlConfiguration.loadConfiguration(armorsConfigFile)
     private val armorCreator = ArmorCreator(plugin)
-
-    private val runningShoesMapping = mapOf(
-        0.2 to "maletrainer",
-        0.4 to "maletrainer",
-        0.7 to "maletrainer"
-    )
+    private val runningShoesMapping = listOf(0.2, 0.4, 0.7)
 
     fun updatePlayerInventory(inventory: PlayerInventory) {
         inventory.contents.filterNotNull().forEachIndexed { index, item ->
-            if (isCustomArmor(item)) {
-                updateItemIfNeeded(item, inventory, index)
-            }
+            updateItem(item, inventory, index)
+        }
+    }
+
+    fun updateItem(item: ItemStack?, inventory: PlayerInventory, index: Int) {
+        when {
+            isCustomArmor(item) -> updateItemIfNeeded(item, inventory, index)
+            isOraxenArmor(item) -> replaceOraxenArmor(item, inventory, index)
+            isRunningShoes(item) -> replaceRunningShoes(item, inventory, index)
         }
     }
 
     private fun replaceOraxenArmor(item: ItemStack?, inventory: PlayerInventory, index: Int) {
-        val pdc = item?.itemMeta?.persistentDataContainer ?: return
-        val oraxenId = NamespacedKey.fromString("oraxen:id")?.let { pdc.get(it, PersistentDataType.STRING) } ?: return
-        
-        val parts = oraxenId.split("_")
-        val oraxenPiece = parts.last()
-        val armorName = parts.dropLast(1).joinToString("")
-        
-        val newItem = armorCreator.createArmorPiece(armorName, oraxenPiece)
-        if (newItem != null) {
+        val oraxenId = item?.itemMeta?.persistentDataContainer
+            ?.get(NamespacedKey.fromString("oraxen:id")!!, PersistentDataType.STRING) ?: return
+
+        val (armorName, oraxenPiece) = oraxenId.split("_").let { it.dropLast(1).joinToString("") to it.last() }
+
+        armorCreator.createArmorPiece(armorName, oraxenPiece)?.let { newItem ->
             newItem.addUnsafeEnchantments(item.enchantments)
             inventory.setItem(index, newItem)
         }
     }
 
-    fun updateItemIfNeeded(item: ItemStack?, inventory: PlayerInventory, index: Int) {
-        if (isOraxenArmor(item)) {
-            replaceOraxenArmor(item, inventory, index)
-            return
-        }
-        if (isRunningShoes(item) && !isCustomArmor(item!!)) {
-            replaceRunningShoes(item, inventory, index)
-            return
-        }
+    private fun updateItemIfNeeded(item: ItemStack?, inventory: PlayerInventory, index: Int) {
         val itemMeta = item?.itemMeta ?: return
         val pdc = itemMeta.persistentDataContainer
         val armorID = pdc.get(NamespacedKey(plugin, "armor"), PersistentDataType.STRING) ?: return
@@ -82,7 +71,7 @@ class InventoryUpdater(private val plugin: Armament) {
             }
         }
 
-        if (displayName != itemMeta.displayName) {
+        if (displayName != itemMeta.displayName && !isRunningShoes(item)) {
             itemMeta.setDisplayName(displayName)
             updateNeeded = true
         }
@@ -103,8 +92,8 @@ class InventoryUpdater(private val plugin: Armament) {
         }
     }
 
-    private fun isCustomArmor(item: ItemStack): Boolean {
-        val pdc = item.itemMeta?.persistentDataContainer
+    private fun isCustomArmor(item: ItemStack?): Boolean {
+        val pdc = item?.itemMeta?.persistentDataContainer
         return pdc?.has(NamespacedKey(plugin, "armor"), PersistentDataType.STRING) == true
     }
 
@@ -116,11 +105,9 @@ class InventoryUpdater(private val plugin: Armament) {
 
     private fun isRunningShoes(item: ItemStack?): Boolean {
         val itemMeta = item?.itemMeta ?: return false
-        if (item.type != Material.LEATHER_BOOTS) return false
-
         val attributeModifiers = itemMeta.attributeModifiers ?: return false
         return attributeModifiers[Attribute.GENERIC_MOVEMENT_SPEED].any { modifier ->
-            runningShoesMapping.containsKey(modifier.amount)
+            runningShoesMapping.contains(modifier.amount)
         }
     }
 
@@ -128,15 +115,14 @@ class InventoryUpdater(private val plugin: Armament) {
         val itemMeta = item?.itemMeta ?: return
         val speedModifier = itemMeta.attributeModifiers?.get(Attribute.GENERIC_MOVEMENT_SPEED)
             ?.firstOrNull { modifier ->
-                runningShoesMapping.containsKey(modifier.amount)
+                runningShoesMapping.contains(modifier.amount)
             } ?: return
 
-        val newArmorName = runningShoesMapping[speedModifier.amount] ?: return
-        val newItem = armorCreator.createArmorPiece(newArmorName, "boots") ?: return
+        val newItem = armorCreator.createArmorPiece("maletrainer", "boots") ?: return
         val newItemMeta = newItem.itemMeta ?: return
 
         newItemMeta.addAttributeModifier(Attribute.GENERIC_MOVEMENT_SPEED, speedModifier)
-        newItemMeta.setDisplayName("&d${ChatColor.stripColor(itemMeta.displayName)}")
+        newItemMeta.setDisplayName(itemMeta.displayName)
         newItem.addUnsafeEnchantments(item.enchantments)
         newItem.itemMeta = newItemMeta
         inventory.setItem(index, newItem)
