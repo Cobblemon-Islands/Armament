@@ -16,7 +16,7 @@ class TabCompleter(private val plugin: Armament) : TabCompleter {
     ): List<String>? {
         if (command.name.equals("armament", ignoreCase = true)) {
             if (args.size == 1) {
-                return listOf("reload", "give", "giveset", "gui")
+                return listOf("reload", "give", "giveset", "gui", "giveshoes")
             } else if (args.size == 2) {
                 when (args[0].lowercase()) {
                     "give" -> {
@@ -32,6 +32,9 @@ class TabCompleter(private val plugin: Armament) : TabCompleter {
                         val armorsConfig = YamlConfiguration.loadConfiguration(armorsConfigFile)
                         val armors = armorsConfig.getConfigurationSection("armors")?.getKeys(false)!!
                         return armors.toList()
+                    }
+                    "giveshoes" -> {
+                        return listOf("slow","medium","fast")
                     }
                     else -> return null
                 }
