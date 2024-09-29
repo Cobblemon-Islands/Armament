@@ -1,18 +1,14 @@
-package dev.furq.armament.gui
+package dev.furq.armament.utils
 
 import dev.furq.armament.Armament
-import dev.furq.armament.utils.ArmorCreator
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.Material
-import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
-import java.io.File
 
 class ArmorGUI(private val plugin: Armament) {
-    private val armorsConfigFile = File(plugin.dataFolder, "armors.yml")
-    private val armorsConfig = YamlConfiguration.loadConfiguration(armorsConfigFile)
+    private val armorsConfig = plugin.getArmorsConfig()
     private val armors = armorsConfig.getConfigurationSection("armors")?.getKeys(false)?.toList() ?: emptyList()
     private val itemsPerPage = 45
     val guiTitle = "§9Armament Armors"

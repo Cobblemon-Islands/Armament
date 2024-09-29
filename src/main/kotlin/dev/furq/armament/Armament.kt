@@ -12,15 +12,12 @@ import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 
 class Armament : JavaPlugin() {
+    private lateinit var armorTrimListener: ArmorTrimListener
     private lateinit var inventoryUpdateListener: InventoryUpdateListener
     private lateinit var messagesConfig: YamlConfiguration
+    private lateinit var armorsConfig: YamlConfiguration
 
     override fun onEnable() {
-        inventoryUpdateListener = InventoryUpdateListener(this)
-        server.pluginManager.registerEvents(InventoryUpdateListener(this), this)
-        server.pluginManager.registerEvents(ArmorTrimListener(this), this)
-        server.pluginManager.registerEvents(GUIListener(this), this)
-
         saveDefaultConfig()
         reloadConfig()
 
@@ -30,7 +27,13 @@ class Armament : JavaPlugin() {
 
         val armorsConfigFile = File(dataFolder, "armors.yml")
         if (!armorsConfigFile.exists()) saveResource("armors.yml", false)
-        val armorsConfig = YamlConfiguration.loadConfiguration(armorsConfigFile)
+        armorsConfig = YamlConfiguration.loadConfiguration(armorsConfigFile)
+
+        inventoryUpdateListener = InventoryUpdateListener(this)
+        armorTrimListener = ArmorTrimListener(this)
+        server.pluginManager.registerEvents(inventoryUpdateListener, this)
+        server.pluginManager.registerEvents(armorTrimListener, this)
+        server.pluginManager.registerEvents(GUIListener(this), this)
 
         val sourceFolder = File(dataFolder, "source_files")
         if (!sourceFolder.exists()) sourceFolder.mkdirs()
@@ -38,7 +41,7 @@ class Armament : JavaPlugin() {
         if (!targetFolder.exists()) targetFolder.mkdirs()
 
         DatapackGenerator(this).generateDatapack()
-        ResourcePackGenerator(this).generateResourcePack(armorsConfig, sourceFolder, targetFolder)
+        ResourcePackGenerator(this).generateResourcePack(sourceFolder, targetFolder)
 
         getCommand("armament")?.setExecutor(ArmamentCommand(this))
         getCommand("armament")?.tabCompleter = TabCompleter(this)
@@ -52,5 +55,15 @@ class Armament : JavaPlugin() {
 
     fun getMessage(key: String): String {
         return messagesConfig.getString(key, "Message not found")!!
+    }
+
+    fun getArmorsConfig(): YamlConfiguration {
+        return armorsConfig
+    }
+
+    fun reloadArmorsConfig() {
+        val armorsConfigFile = File(dataFolder, "armors.yml")
+        if (!armorsConfigFile.exists()) saveResource("armors.yml", false)
+        armorsConfig = YamlConfiguration.loadConfiguration(armorsConfigFile)
     }
 }

@@ -8,5 +8,5 @@ libraries:
 commands:
   armament:
     description: Main command of the plugin
-    usage: /<command> <subcommand>
+    usage: /armament <subcommand>
     permission: armament.admin

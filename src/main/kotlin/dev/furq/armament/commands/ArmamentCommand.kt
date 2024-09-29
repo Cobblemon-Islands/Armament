@@ -3,7 +3,7 @@ package dev.furq.armament.commands
 import dev.furq.armament.Armament
 import dev.furq.armament.gui.ArmorGUI
 import dev.furq.armament.utils.ArmorCreator
-import dev.furq.armament.utils.DatapackGenerator
+import dev.furq.armament.utils.ArmorGUI
 import dev.furq.armament.utils.ResourcePackGenerator
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
@@ -13,16 +13,13 @@ import org.bukkit.attribute.AttributeModifier
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
-import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import java.io.File
-import java.util.*
 
 class ArmamentCommand(private val plugin: Armament) : CommandExecutor {
 
-    private var armorsConfig = YamlConfiguration.loadConfiguration(File(plugin.dataFolder, "armors.yml"))
     private val prefix = plugin.getMessage("prefix")
     private val armorCreator = ArmorCreator(plugin)
 
@@ -42,13 +39,12 @@ class ArmamentCommand(private val plugin: Armament) : CommandExecutor {
 
     private fun handleReload(sender: CommandSender) {
         plugin.reloadConfig()
-        armorsConfig = YamlConfiguration.loadConfiguration(File(plugin.dataFolder, "armors.yml"))
+        plugin.reloadArmorsConfig()
         val sourceFolder = File(plugin.dataFolder, "source_files")
         val targetFolder = File(plugin.dataFolder, "resource_pack")
         if (!sourceFolder.exists()) sourceFolder.mkdirs()
         if (!targetFolder.exists()) targetFolder.mkdirs()
-        DatapackGenerator(plugin).generateDatapack()
-        ResourcePackGenerator(plugin).generateResourcePack(armorsConfig, sourceFolder, targetFolder)
+        ResourcePackGenerator(plugin).generateResourcePack(sourceFolder, targetFolder)
         sender.sendMessage("$prefix §7Reloaded Armament successfully!")
     }
 
@@ -61,6 +57,7 @@ class ArmamentCommand(private val plugin: Armament) : CommandExecutor {
         val armorPiece = args[2]
         val targetPlayer = if (args.size >= 4) Bukkit.getPlayer(args[3]) else sender as? Player
 
+        val armorsConfig = plugin.getArmorsConfig()
         if (armorName !in armorsConfig.getConfigurationSection("armors")?.getKeys(false).orEmpty()) {
             sender.sendMessage("$prefix ${plugin.getMessage("armor-not-found")}")
             return
@@ -69,7 +66,11 @@ class ArmamentCommand(private val plugin: Armament) : CommandExecutor {
         val armorItem = armorCreator.createArmorPiece(armorName, armorPiece) ?: return
 
         if (targetPlayer != null) {
-            targetPlayer.inventory.addItem(armorItem)
+            if (targetPlayer.inventory.firstEmpty() == -1) {
+                targetPlayer.world.dropItemNaturally(targetPlayer.location, armorItem)
+            } else {
+                targetPlayer.inventory.addItem(armorItem)
+            }
             sender.sendMessage(
                 "$prefix ${
                     plugin.getMessage("armor-given").replace("{player}", targetPlayer.name)
@@ -94,6 +95,7 @@ class ArmamentCommand(private val plugin: Armament) : CommandExecutor {
             return
         }
         val armorName = args[1]
+        val armorsConfig = plugin.getArmorsConfig()
         val armors = armorsConfig.getConfigurationSection("armors")?.getKeys(false)
             ?: return sender.sendMessage("$prefix ${plugin.getMessage("armors-not-found")}")
 
@@ -111,7 +113,11 @@ class ArmamentCommand(private val plugin: Armament) : CommandExecutor {
 
         if (targetPlayer != null) {
             armorItems.forEach {
-                targetPlayer.inventory.addItem(it)
+                if (targetPlayer.inventory.firstEmpty() == -1) {
+                    it?.let { piece -> targetPlayer.world.dropItemNaturally(targetPlayer.location, piece) }
+                } else {
+                    targetPlayer.inventory.addItem(it)
+                }
             }
             sender.sendMessage(
                 "$prefix ${

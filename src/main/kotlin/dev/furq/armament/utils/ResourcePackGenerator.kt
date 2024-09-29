@@ -11,7 +11,8 @@ import java.util.zip.ZipOutputStream
 class ResourcePackGenerator(private val plugin: Armament) {
     private val materialGetter = MaterialGetter(plugin)
 
-    fun generateResourcePack(armorsConfig: FileConfiguration, sourceFolder: File, targetFolder: File) {
+    fun generateResourcePack(sourceFolder: File, targetFolder: File) {
+        val armorsConfig = plugin.getArmorsConfig()
         File(sourceFolder, "item_files").mkdirs()
         File(sourceFolder, "layer_files").mkdirs()
 
@@ -299,8 +300,10 @@ class ResourcePackGenerator(private val plugin: Armament) {
             ?.toSet() ?: emptySet()
         
         val sourcePNGs = (itemFiles + layerFiles).toSet()
-        val extraPNGs = sourcePNGs - configArmors
-        val missingPNGs = configArmors - sourcePNGs
+        val extraItemPNGs = itemFiles - configArmors
+        val extraLayerPNGs = layerFiles - configArmors
+        val missingItemPNGs = configArmors - itemFiles
+        val missingLayerPNGs = configArmors - layerFiles
 
         val customModelDataMap = mutableMapOf<Int, MutableList<String>>()
         configArmors.forEach { armorName ->
@@ -310,19 +313,33 @@ class ResourcePackGenerator(private val plugin: Armament) {
 
         val duplicateCustomModelData = customModelDataMap.filter { it.value.size > 1 }
 
-        if (extraPNGs.isNotEmpty() || missingPNGs.isNotEmpty() || duplicateCustomModelData.isNotEmpty()) {
+        if (extraItemPNGs.isNotEmpty() || extraLayerPNGs.isNotEmpty() || missingItemPNGs.isNotEmpty() || missingLayerPNGs.isNotEmpty() || duplicateCustomModelData.isNotEmpty()) {
             plugin.logger.warning("=== Resource Pack Configuration Warnings ===")
             
-            if (extraPNGs.isNotEmpty()) {
-                plugin.logger.warning("Armors with PNG files but not defined in config:")
-                extraPNGs.forEach { armorName ->
+            if (extraItemPNGs.isNotEmpty()) {
+                plugin.logger.warning("Armors with PNG files in item_files but not defined in config:")
+                extraItemPNGs.forEach { armorName ->
                     plugin.logger.warning("  - $armorName")
                 }
             }
             
-            if (missingPNGs.isNotEmpty()) {
-                plugin.logger.warning("Armors defined in config but missing PNG files:")
-                missingPNGs.forEach { armorName ->
+            if (extraLayerPNGs.isNotEmpty()) {
+                plugin.logger.warning("Armors with PNG files in layer_files but not defined in config:")
+                extraLayerPNGs.forEach { armorName ->
+                    plugin.logger.warning("  - $armorName")
+                }
+            }
+            
+            if (missingItemPNGs.isNotEmpty()) {
+                plugin.logger.warning("Armors defined in config but missing PNG files in item_files:")
+                missingItemPNGs.forEach { armorName ->
+                    plugin.logger.warning("  - $armorName")
+                }
+            }
+            
+            if (missingLayerPNGs.isNotEmpty()) {
+                plugin.logger.warning("Armors defined in config but missing PNG files in layer_files:")
+                missingLayerPNGs.forEach { armorName ->
                     plugin.logger.warning("  - $armorName")
                 }
             }

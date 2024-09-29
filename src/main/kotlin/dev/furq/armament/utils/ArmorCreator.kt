@@ -4,18 +4,16 @@ import dev.furq.armament.Armament
 import org.bukkit.ChatColor
 import org.bukkit.NamespacedKey
 import org.bukkit.Registry
-import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.ArmorMeta
 import org.bukkit.inventory.meta.trim.ArmorTrim
 import org.bukkit.inventory.meta.trim.TrimMaterial
 import org.bukkit.persistence.PersistentDataType
-import java.io.File
 
 class ArmorCreator(private val plugin: Armament) {
 
-    private val armorsConfig = YamlConfiguration.loadConfiguration(File(plugin.dataFolder, "armors.yml"))
+    private val armorsConfig = plugin.getArmorsConfig()
     private val materialGetter = MaterialGetter(plugin)
 
     fun createArmorPiece(armorName: String, piece: String): ItemStack? {

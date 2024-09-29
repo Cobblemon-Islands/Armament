@@ -1,7 +1,7 @@
 package dev.furq.armament.listeners
 
 import dev.furq.armament.Armament
-import dev.furq.armament.gui.ArmorGUI
+import dev.furq.armament.utils.ArmorGUI
 import dev.furq.armament.utils.ArmorCreator
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
