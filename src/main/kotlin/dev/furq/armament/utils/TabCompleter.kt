@@ -16,8 +16,9 @@ class TabCompleter(private val plugin: Armament) : TabCompleter {
             val armorsConfig = plugin.getArmorsConfig()
             when (args.size) {
                 1 -> {
-                    return listOf("reload", "give", "giveset", "gui")
+                    return listOf("reload", "give", "giveset", "gui", "giveshoes")
                 }
+
                 2 -> {
                     when (args[0].lowercase()) {
                         "give", "giveset" -> {
@@ -25,9 +26,14 @@ class TabCompleter(private val plugin: Armament) : TabCompleter {
                             return armors.toList()
                         }
 
+                        "giveshoes" -> {
+                            return listOf("slow", "medium", "fast")
+                        }
+
                         else -> return null
                     }
                 }
+
                 3 -> {
                     when (args[0].lowercase()) {
                         "give" -> {

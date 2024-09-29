@@ -1,9 +1,8 @@
 package dev.furq.armament.commands
 
 import dev.furq.armament.Armament
-import dev.furq.armament.gui.ArmorGUI
-import dev.furq.armament.utils.ArmorCreator
 import dev.furq.armament.utils.ArmorGUI
+import dev.furq.armament.utils.ArmorCreator
 import dev.furq.armament.utils.ResourcePackGenerator
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
@@ -17,6 +16,7 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import java.io.File
+import java.util.*
 
 class ArmamentCommand(private val plugin: Armament) : CommandExecutor {
 
@@ -154,7 +154,6 @@ class ArmamentCommand(private val plugin: Armament) : CommandExecutor {
 
 
         val targetPlayer = if (args.size >= 3) Bukkit.getPlayer(args[2]) else sender as? Player
-
         if (targetPlayer == null) return
         sender.sendMessage("$prefix ${plugin.getMessage("player-not-found")}")
 
