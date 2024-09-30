@@ -1,8 +1,8 @@
 package dev.furq.armament.commands
 
 import dev.furq.armament.Armament
-import dev.furq.armament.utils.ArmorGUI
 import dev.furq.armament.utils.ArmorCreator
+import dev.furq.armament.utils.ArmorGUI
 import dev.furq.armament.utils.ResourcePackGenerator
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
@@ -144,19 +144,22 @@ class ArmamentCommand(private val plugin: Armament) : CommandExecutor {
     }
 
     private fun handleGiveShoes(sender: CommandSender, args: Array<out String>) {
-        if (args.size < 2) return
-        sender.sendMessage("$prefix §7Usage: /armament giveshoes <slow|medium|fast> [player]")
-
+        if (args.size < 2) {
+            sender.sendMessage("$prefix §7Usage: /armament giveshoes <slow|medium|fast> [player]")
+            return
+        }
 
         val speedType = args[1].lowercase()
-        if (speedType !in listOf("slow", "medium", "fast")) return
-        sender.sendMessage("$prefix §7Invalid speed type. Use slow, medium, or fast.")
-
+        if (speedType !in listOf("slow", "medium", "fast")) {
+            sender.sendMessage("$prefix §7Invalid speed type. Use slow, medium, or fast.")
+            return
+        }
 
         val targetPlayer = if (args.size >= 3) Bukkit.getPlayer(args[2]) else sender as? Player
-        if (targetPlayer == null) return
-        sender.sendMessage("$prefix ${plugin.getMessage("player-not-found")}")
-
+        if (targetPlayer == null) {
+            sender.sendMessage("$prefix ${plugin.getMessage("player-not-found")}")
+            return
+        }
 
         val shoes = createRunningShoes(speedType)
         targetPlayer.inventory.addItem(shoes)

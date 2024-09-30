@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "dev.furq"
-version = "0.2"
+version = "1.0"
 
 repositories {
     mavenCentral()

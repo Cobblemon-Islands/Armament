@@ -32,7 +32,8 @@ class ArmorCreator(private val plugin: Armament) {
                 setCustomModelData(armorConfig.getInt("custom_model_data"))
                 lore = armorConfig.getStringList("$piece.lore").map { ChatColor.translateAlternateColorCodes('&', it) }
                 persistentDataContainer.set(NamespacedKey(plugin, "armor"), PersistentDataType.STRING, armorName)
-                addItemFlags(ItemFlag.HIDE_ARMOR_TRIM)
+                addItemFlags(ItemFlag.HIDE_ARMOR_TRIM, ItemFlag.HIDE_UNBREAKABLE)
+                isUnbreakable = true
             }
             setVanillaArmorTrim(this, armorName)
         }
