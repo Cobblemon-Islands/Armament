@@ -25,9 +25,14 @@ class ResourcePackGenerator(private val plugin: Armament) {
             "assets/minecraft/models/armors",
             "assets/minecraft/textures/item/armors",
             "assets/armament/textures/trims/models/armor",
-            "assets/minecraft/atlases"
+            "assets/minecraft/atlases",
+            "assets/minecraft/textures/models/armor"
         )
         directories.forEach { File(targetFolder, it).mkdirs() }
+        copyResourceFolder(
+            "resource_pack/assets/minecraft/textures/models/armor",
+            File(targetFolder, "assets/minecraft/textures/models/armor")
+        )
 
         val material = materialGetter.getArmorString().lowercase()
         armorsConfig.getConfigurationSection("armors")?.getKeys(false)?.forEach { armorName ->
@@ -163,6 +168,23 @@ class ResourcePackGenerator(private val plugin: Armament) {
         }
     }
 
+    private fun copyResourceFolder(resourcePath: String, targetDir: File) {
+        val material = materialGetter.getArmorString().lowercase()
+        val resourceFiles = listOf(
+            "transparent_layer.png" to "${material}_layer_1.png",
+            "transparent_layer.png" to "${material}_layer_2.png",
+        )
+
+        resourceFiles.forEach { (sourceName, targetName) ->
+            plugin.getResource("$resourcePath/$sourceName")?.let { inputStream ->
+                val targetFile = File(targetDir, targetName)
+                targetFile.outputStream().use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            }
+        }
+    }
+
     private fun zipResourcePack(targetFolder: File) {
         val zipFile = File(targetFolder.parentFile, "${targetFolder.name}.zip")
         ZipOutputStream(BufferedOutputStream(FileOutputStream(zipFile))).use { zipOut ->
@@ -184,7 +206,9 @@ class ResourcePackGenerator(private val plugin: Armament) {
         val pngDirectories = listOf(
             "assets/minecraft/textures/item/armors",
             "assets/minecraft/models/armors",
+            "assets/minecraft/textures/models/armor",
             "assets/armament/textures/trims/models/armor"
+
         )
         pngDirectories.forEach { dir ->
             File(targetFolder, dir).listFiles()?.forEach { file ->
