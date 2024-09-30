@@ -1,13 +1,13 @@
 package dev.furq.armament.listeners
 
 import dev.furq.armament.Armament
-import dev.furq.armament.utils.ArmorGUI
 import dev.furq.armament.utils.ArmorCreator
+import dev.furq.armament.utils.ArmorGUI
+import org.bukkit.NamespacedKey
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.inventory.InventoryClickEvent
-import org.bukkit.NamespacedKey
 import org.bukkit.persistence.PersistentDataType
 
 class GUIListener(private val plugin: Armament) : Listener {
@@ -41,6 +41,10 @@ class GUIListener(private val plugin: Armament) : Listener {
             player.inventory.addItem(it)
         }
 
-        player.sendMessage("${plugin.getMessage("prefix")} ${plugin.getMessage("armorset-received").replace("{armorName}", armorName)}")
+        player.sendMessage(
+            "${plugin.getMessage("prefix")} ${
+                plugin.getMessage("armorset-received").replace("{armorName}", armorName)
+            }"
+        )
     }
 }

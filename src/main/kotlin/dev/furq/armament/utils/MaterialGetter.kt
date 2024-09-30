@@ -7,7 +7,7 @@ class MaterialGetter(val plugin: Armament) {
     fun getArmorMaterial(): List<Material> {
         val armorMaterial = plugin.config.getString("armor_material")
         val validMaterials = listOf("CHAINMAIL", "DIAMOND", "GOLD", "NETHERITE")
-        
+
         return if (armorMaterial != null && validMaterials.contains(armorMaterial.uppercase())) {
             listOf(
                 Material.valueOf("${armorMaterial.uppercase()}_HELMET"),
@@ -20,6 +20,7 @@ class MaterialGetter(val plugin: Armament) {
             throw IllegalArgumentException("Invalid armor material")
         }
     }
+
     fun getArmorString(): String {
         val armorMaterial = plugin.config.getString("armor_material")
         val validMaterials = listOf("CHAINMAIL", "DIAMOND", "GOLD", "NETHERITE")

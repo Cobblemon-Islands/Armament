@@ -2,8 +2,8 @@ package dev.furq.armament
 
 import dev.furq.armament.commands.ArmamentCommand
 import dev.furq.armament.listeners.ArmorTrimListener
-import dev.furq.armament.listeners.InventoryUpdateListener
 import dev.furq.armament.listeners.GUIListener
+import dev.furq.armament.listeners.InventoryUpdateListener
 import dev.furq.armament.utils.DatapackGenerator
 import dev.furq.armament.utils.ResourcePackGenerator
 import dev.furq.armament.utils.TabCompleter
