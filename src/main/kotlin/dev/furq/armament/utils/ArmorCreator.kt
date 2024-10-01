@@ -13,10 +13,10 @@ import org.bukkit.persistence.PersistentDataType
 
 class ArmorCreator(private val plugin: Armament) {
 
-    private val armorsConfig = plugin.getArmorsConfig()
     private val materialGetter = MaterialGetter(plugin)
 
     fun createArmorPiece(armorName: String, piece: String): ItemStack? {
+        val armorsConfig = plugin.getArmorsConfig()
         val material =
             materialGetter.getArmorMaterial().find { it.name.endsWith("_${piece.uppercase()}") } ?: return null
         val armorConfig = armorsConfig.getConfigurationSection("armors.$armorName") ?: return null
@@ -40,6 +40,7 @@ class ArmorCreator(private val plugin: Armament) {
     }
 
     fun createFullArmorSet(armorName: String): List<ItemStack?> {
+        val armorsConfig = plugin.getArmorsConfig()
         val pieces = listOf("helmet", "chestplate", "leggings", "boots")
         return pieces.mapNotNull { piece ->
             if (armorsConfig.contains("armors.$armorName.$piece")) {

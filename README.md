@@ -39,41 +39,48 @@ Adds the ability to create configurable custom armors using resource packs.
 
 ## 📩 **Installation Steps**
 
-1. **[Download Armament](https://modrinth.com/plugin/armament):** Get the latest version from Modrinth.
-2. **Install:** 
+1. **Download Armament:**
+   - Get the latest version from [Modrinth](https://modrinth.com/plugin/armament).
+
+2. **Install:**
    - Place the `.jar` file into your server's `plugins` directory.
-   - Example:
-     ```bash
-     /plugins/Armament-x.x.x.jar
-     ```
+   - Example: `/plugins/Armament-x.x.x.jar`
+
 3. **Activate:**
    - Restart your server to load the plugin.
-4. **Customize:** 
+
+4. **Customize:**
    - Edit the `armors.yml` file located in `plugins/Armament/armors.yml` to add your custom armor sets.
-   - Example:
-   ```yaml
-   armors:
-     epic:
-       custom_model_data: 1
-       chestplate:
-         name: "&6Epic Chestplate"
-         lore:
-           - "&7Custom Epic Lore!"
-       leggings:
-         name: "&6Epic Leggings"
-         lore:
-           - "&7Custom Epic Lore!"
-       boots:
-         name: "&6Epic Boots"
-         lore:
-           - "&7Custom Epic Lore!"
-   ```
+   - Example configuration:
+     ```yaml
+     armors:
+       epic:
+         custom_model_data: 1
+         helmet:
+            name: "&6Epic Chestplate"
+            lore:
+            - "&7Custom Epic Lore!"
+         chestplate:
+            name: "&6Epic Chestplate"
+            lore:
+            - "&7Custom Epic Lore!"
+         leggings:
+            name: "&6Epic Leggings"
+            lore:
+            - "&7Custom Epic Lore!"
+         boots:
+            name: "&6Epic Boots"
+            lore:
+            - "&7Custom Epic Lore!"
+     ```
+
 5. **Add Resources:**
-   - Place your custom armor textures in the `source_files` directory.
-    - Armor layers will be placed in `source_files/layer_files`.
-    - Armor display items will be placed in `source_files/item_files`.
+   - Place your custom armor textures in the `source_files` directory:
+     - Armor layers: `source_files/layer_files/`
+     - Armor display items: `source_files/item_files/`
+
 6. **Load Resource Pack:**
-   - Upload the resource pack to [mc-packs.net](https://mc-packs.net).
+   - Upload the generated resource pack to [mc-packs.net](https://mc-packs.net).
    - Update the `server.properties` file:
      | Property | Value |
      | --- | --- |
@@ -81,6 +88,49 @@ Adds the ability to create configurable custom armors using resource packs.
      | `resource-pack-sha1` | *SHA1 hash of the resource pack* |
      | `require-resource-pack` | `true` |
    - **Note:** If you're using an existing resource pack, merge it with the Armament resource pack.
+
+---
+
+## 🎨 **Creating Custom Armor Textures**
+
+To create custom armor textures for Armament:
+
+1. **Open the Template:**
+   - Locate the `armor_model.bbmodel` file in [src/main/resources](https://github.com/Furq07/Armament/tree/main/src/main/resources).
+   - Open this file in BlockBench to get an understanding of the armor structure.
+
+2. **Customize the Model:**
+   - Ensure your model adheres to Minecraft's armor structure.
+
+3. **Export Textures:**
+   - Export your custom armor textures.
+
+4. **Prepare Texture Files:**
+   The plugin requires specific naming conventions for the texture files:
+
+   a) **Layer Files** (Required):
+      In `source_files/layer_files/`:
+      - `armorName_layer_1.png`: For helmet, chestplate, and boots
+      - `armorName_layer_2.png`: For leggings
+
+   b) **Item Files** (Optional, based on armors.yml):
+      In `source_files/item_files/`:
+      - `armorName_helmet.png`
+      - `armorName_chestplate.png`
+      - `armorName_leggings.png`
+      - `armorName_boots.png`
+
+   Replace `armorName` with the name of your custom armor set as defined in `armors.yml`.
+
+5. **Place Textures:**
+   - Put the armor layer textures (`*_layer_1.png` and `*_layer_2.png`) in `source_files/layer_files/`.
+   - Put the display item textures (e.g., `*_helmet.png`) in `source_files/item_files/`.
+
+6. **Update Configuration:**
+   - In `armors.yml`, reference your new textures using the appropriate armor name.
+   - Ensure the armor name in the configuration matches the prefix used in your texture file names.
+
+**Note:** The item files (helmet, chestplate, leggings, boots) are optional and depend on your `armors.yml` configuration. If you define a specific armor piece in the config, make sure to provide the corresponding item texture.
 
 ---
 

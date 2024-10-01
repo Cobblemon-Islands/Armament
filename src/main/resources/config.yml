@@ -5,4 +5,7 @@
 # GOLD
 # DIAMOND
 # NETHERITE
-armor_material: DIAMOND # set to Diamond by default!
+armor_material: NETHERITE # set to Netherite by default!
+
+# Generate default armors config?
+generate_default_textures: true # set to true by default!

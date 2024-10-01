@@ -6,7 +6,7 @@ import org.bukkit.Material
 class MaterialGetter(val plugin: Armament) {
     fun getArmorMaterial(): List<Material> {
         val armorMaterial = plugin.config.getString("armor_material")
-        val validMaterials = listOf("CHAINMAIL", "DIAMOND", "GOLD", "NETHERITE")
+        val validMaterials = listOf("CHAINMAIL", "IRON", "GOLD", "DIAMOND", "NETHERITE")
 
         return if (armorMaterial != null && validMaterials.contains(armorMaterial.uppercase())) {
             listOf(

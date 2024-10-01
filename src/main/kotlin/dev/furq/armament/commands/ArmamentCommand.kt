@@ -39,13 +39,15 @@ class ArmamentCommand(private val plugin: Armament) : CommandExecutor {
 
     private fun handleReload(sender: CommandSender) {
         plugin.reloadConfig()
-        plugin.reloadArmorsConfig()
-        val sourceFolder = File(plugin.dataFolder, "source_files")
-        val targetFolder = File(plugin.dataFolder, "resource_pack")
-        if (!sourceFolder.exists()) sourceFolder.mkdirs()
-        if (!targetFolder.exists()) targetFolder.mkdirs()
-        ResourcePackGenerator(plugin).generateResourcePack(sourceFolder, targetFolder)
-        sender.sendMessage("$prefix §7Reloaded Armament successfully!")
+        plugin.loadConfigs()
+        listOf("source_files", "resource_pack").forEach {
+            File(plugin.dataFolder, it).mkdirs()
+        }
+        ResourcePackGenerator(plugin).generateResourcePack(
+            File(plugin.dataFolder, "source_files"),
+            File(plugin.dataFolder, "resource_pack")
+        )
+        sender.sendMessage("$prefix ${plugin.getMessage("reload-success")}")
     }
 
     private fun handleGive(sender: CommandSender, args: Array<out String>) {
@@ -56,9 +58,9 @@ class ArmamentCommand(private val plugin: Armament) : CommandExecutor {
         val armorName = args[1]
         val armorPiece = args[2]
         val targetPlayer = if (args.size >= 4) Bukkit.getPlayer(args[3]) else sender as? Player
-
-        val armorsConfig = plugin.getArmorsConfig()
-        if (armorName !in armorsConfig.getConfigurationSection("armors")?.getKeys(false).orEmpty()) {
+        val armorsCofig = plugin.getArmorsConfig()
+        val armors = armorsCofig.getConfigurationSection("armors")
+        if (armorName !in armors?.getKeys(false).orEmpty()) {
             sender.sendMessage("$prefix ${plugin.getMessage("armor-not-found")}")
             return
         }
@@ -71,16 +73,22 @@ class ArmamentCommand(private val plugin: Armament) : CommandExecutor {
             } else {
                 targetPlayer.inventory.addItem(armorItem)
             }
+            val armorPieceName = ChatColor.translateAlternateColorCodes(
+                '&',
+                armors?.getString("$armorName.$armorPiece.name") ?: armorName.replaceFirstChar { it.uppercase() })
             sender.sendMessage(
                 "$prefix ${
                     plugin.getMessage("armor-given").replace("{player}", targetPlayer.name)
-                        .replace("{armorName}", armorName)
+                        .replace("{armorName}", armorPieceName)
                 }"
             )
             if (sender != targetPlayer) {
                 targetPlayer.sendMessage(
                     "$prefix ${
-                        plugin.getMessage("armor-received").replace("{armorName}", armorName)
+                        plugin.getMessage("armor-received").replace(
+                            "{armorName}",
+                            armorPieceName
+                        )
                     }"
                 )
             }
@@ -122,12 +130,13 @@ class ArmamentCommand(private val plugin: Armament) : CommandExecutor {
             sender.sendMessage(
                 "$prefix ${
                     plugin.getMessage("armorset-given").replace("{player}", targetPlayer.name)
-                        .replace("{armorName}", armorName)
+                        .replace("{armorName}", armorName.replaceFirstChar { it.uppercase() })
                 }"
             )
             targetPlayer.sendMessage(
                 "$prefix ${
-                    plugin.getMessage("armorset-received").replace("{armorName}", armorName)
+                    plugin.getMessage("armorset-received")
+                        .replace("{armorName}", armorName.replaceFirstChar { it.uppercase() })
                 }"
             )
         } else {

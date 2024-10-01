@@ -2,6 +2,12 @@ armors:
   epic:
     # Custom model data for the epic armor set
     custom_model_data: 1
+    helmet:
+      # Name of the epic helmet
+      name: "&6Epic Helmet"
+      # Lore for the epic helmet
+      lore:
+        - "&7Custom Epic Lore!"
     chestplate:
       # Name of the epic chestplate
       name: "&6Epic Chestplate"

@@ -14,7 +14,7 @@ class ArmorGUI(private val plugin: Armament) {
     val guiTitle = "§9Armament Armors"
 
     fun openGUI(player: Player, page: Int) {
-        val inventory = Bukkit.createInventory(null, 54, "$guiTitle §8| §6Page ${page + 1}")
+        val inventory = Bukkit.createInventory(null, 54, "$guiTitle §8| §7Page ${page + 1}")
         val startIndex = page * itemsPerPage
         val endIndex = minOf(startIndex + itemsPerPage, armors.size)
 

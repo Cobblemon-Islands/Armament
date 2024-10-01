@@ -7,63 +7,98 @@ import dev.furq.armament.listeners.InventoryUpdateListener
 import dev.furq.armament.utils.DatapackGenerator
 import dev.furq.armament.utils.ResourcePackGenerator
 import dev.furq.armament.utils.TabCompleter
+import org.bukkit.ChatColor
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 
 class Armament : JavaPlugin() {
-    private lateinit var armorTrimListener: ArmorTrimListener
-    private lateinit var inventoryUpdateListener: InventoryUpdateListener
     private lateinit var messagesConfig: YamlConfiguration
     private lateinit var armorsConfig: YamlConfiguration
 
     override fun onEnable() {
         saveDefaultConfig()
         reloadConfig()
+        loadConfigs()
+        copyInitialFiles()
 
-        val messagesConfigFile = File(dataFolder, "messages.yml")
-        if (!messagesConfigFile.exists()) saveResource("messages.yml", false)
-        messagesConfig = YamlConfiguration.loadConfiguration(messagesConfigFile)
+        server.pluginManager.apply {
+            registerEvents(InventoryUpdateListener(this@Armament), this@Armament)
+            registerEvents(ArmorTrimListener(this@Armament), this@Armament)
+            registerEvents(GUIListener(this@Armament), this@Armament)
+        }
 
-        val armorsConfigFile = File(dataFolder, "armors.yml")
-        if (!armorsConfigFile.exists()) saveResource("armors.yml", false)
-        armorsConfig = YamlConfiguration.loadConfiguration(armorsConfigFile)
-
-        inventoryUpdateListener = InventoryUpdateListener(this)
-        armorTrimListener = ArmorTrimListener(this)
-        server.pluginManager.registerEvents(inventoryUpdateListener, this)
-        server.pluginManager.registerEvents(armorTrimListener, this)
-        server.pluginManager.registerEvents(GUIListener(this), this)
-
-        val sourceFolder = File(dataFolder, "source_files")
-        if (!sourceFolder.exists()) sourceFolder.mkdirs()
-        val targetFolder = File(dataFolder, "resource_pack")
-        if (!targetFolder.exists()) targetFolder.mkdirs()
+        listOf("source_files", "resource_pack").forEach {
+            File(dataFolder, it).mkdirs()
+        }
 
         DatapackGenerator(this).generateDatapack()
-        ResourcePackGenerator(this).generateResourcePack(sourceFolder, targetFolder)
+        ResourcePackGenerator(this).generateResourcePack(
+            File(dataFolder, "source_files"),
+            File(dataFolder, "resource_pack")
+        )
 
-        getCommand("armament")?.setExecutor(ArmamentCommand(this))
-        getCommand("armament")?.tabCompleter = TabCompleter(this)
-
-        logger.info("Thank you for using my plugin - Furq")
+        getCommand("armament")?.apply {
+            setExecutor(ArmamentCommand(this@Armament))
+            tabCompleter = TabCompleter(this@Armament)
+        }
     }
 
     override fun onDisable() {
+        loadConfigs()
+        DatapackGenerator(this).generateDatapack()
         logger.info("Armament plugin has been disabled!")
+
     }
 
-    fun getMessage(key: String): String {
-        return messagesConfig.getString(key, "Message not found")!!
+    fun getMessage(key: String): String = ChatColor.translateAlternateColorCodes('&', messagesConfig.getString(key, "Message not found")!!)
+    fun getArmorsConfig(): YamlConfiguration = armorsConfig
+
+    fun loadConfigs() {
+        armorsConfig = loadConfig("armors.yml")
+        messagesConfig = loadConfig("messages.yml")
     }
 
-    fun getArmorsConfig(): YamlConfiguration {
-        return armorsConfig
+    private fun loadConfig(fileName: String): YamlConfiguration {
+        val file = File(dataFolder, fileName)
+        if (!file.exists()) saveResource(fileName, false)
+        return YamlConfiguration.loadConfiguration(file)
     }
 
-    fun reloadArmorsConfig() {
-        val armorsConfigFile = File(dataFolder, "armors.yml")
-        if (!armorsConfigFile.exists()) saveResource("armors.yml", false)
-        armorsConfig = YamlConfiguration.loadConfiguration(armorsConfigFile)
+    private fun copyInitialFiles() {
+        val sourceFolder = File(dataFolder, "source_files")
+        val itemFilesFolder = File(sourceFolder, "item_files")
+        val layerFilesFolder = File(sourceFolder, "layer_files")
+
+        itemFilesFolder.mkdirs()
+        layerFilesFolder.mkdirs()
+
+        if (config.getBoolean("generate_default_textures", true)) {
+            val itemFiles = listOf(
+                "epic_helmet.png",
+                "epic_chestplate.png",
+                "epic_leggings.png",
+                "epic_boots.png"
+            )
+            val layerFiles = listOf(
+                "epic_layer_1.png",
+                "epic_layer_2.png"
+            )
+            copyResourceFiles("source_files/item_files", itemFiles, itemFilesFolder)
+            copyResourceFiles("source_files/layer_files", layerFiles, layerFilesFolder)
+        }
+    }
+
+    private fun copyResourceFiles(resourcePath: String, fileNames: List<String>, targetDir: File) {
+        fileNames.forEach { fileName ->
+            getResource("$resourcePath/$fileName")?.let { inputStream ->
+                val targetFile = File(targetDir, fileName)
+                if (!targetFile.exists()) {
+                    targetFile.outputStream().use { outputStream ->
+                        inputStream.copyTo(outputStream)
+                    }
+                }
+            }
+        }
     }
 }

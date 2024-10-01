@@ -43,7 +43,8 @@ class GUIListener(private val plugin: Armament) : Listener {
 
         player.sendMessage(
             "${plugin.getMessage("prefix")} ${
-                plugin.getMessage("armorset-received").replace("{armorName}", armorName)
+                plugin.getMessage("armorset-received")
+                    .replace("{armorName}", armorName.replaceFirstChar { it.uppercase() })
             }"
         )
     }
